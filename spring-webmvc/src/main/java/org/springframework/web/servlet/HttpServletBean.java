@@ -67,7 +67,7 @@ import org.springframework.web.context.support.StandardServletEnvironment;
  * filter's {@link #getServletContext() ServletContext} (see
  * {@link org.springframework.web.context.support.WebApplicationContextUtils}).
  *
- * <p>The {@link FrameworkServlet} class is a more specific servlet base
+ * <p>The {@link FlashMapManager.FrameworkServlet} class is a more specific servlet base
  * class which loads its own application context. FrameworkServlet serves
  * as direct base class of Spring's full-fledged {@link DispatcherServlet}.
  *

@@ -33,7 +33,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.context.AbstractContextLoaderInitializer;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
-import org.springframework.web.servlet.FrameworkServlet;
+import org.springframework.web.servlet.FlashMapManager;
 
 /**
  * Base class for {@link org.springframework.web.WebApplicationInitializer}
@@ -81,7 +81,7 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 		WebApplicationContext servletAppContext = createServletApplicationContext();
 		Assert.notNull(servletAppContext, "createServletApplicationContext() must not return null");
 
-		FrameworkServlet dispatcherServlet = createDispatcherServlet(servletAppContext);
+		FlashMapManager.FrameworkServlet dispatcherServlet = createDispatcherServlet(servletAppContext);
 		Assert.notNull(dispatcherServlet, "createDispatcherServlet(WebApplicationContext) must not return null");
 		dispatcherServlet.setContextInitializers(getServletApplicationContextInitializers());
 
@@ -125,12 +125,12 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	protected abstract WebApplicationContext createServletApplicationContext();
 
 	/**
-	 * Create a {@link DispatcherServlet} (or other kind of {@link FrameworkServlet}-derived
+	 * Create a {@link DispatcherServlet} (or other kind of {@link FlashMapManager.FrameworkServlet}-derived
 	 * dispatcher) with the specified {@link WebApplicationContext}.
-	 * <p>Note: This allows for any {@link FrameworkServlet} subclass as of 4.2.3.
+	 * <p>Note: This allows for any {@link FlashMapManager.FrameworkServlet} subclass as of 4.2.3.
 	 * Previously, it insisted on returning a {@link DispatcherServlet} or subclass thereof.
 	 */
-	protected FrameworkServlet createDispatcherServlet(WebApplicationContext servletAppContext) {
+	protected FlashMapManager.FrameworkServlet createDispatcherServlet(WebApplicationContext servletAppContext) {
 		return new DispatcherServlet(servletAppContext);
 	}
 
