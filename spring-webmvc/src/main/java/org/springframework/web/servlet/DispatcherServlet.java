@@ -155,7 +155,7 @@ import org.springframework.web.util.WebUtils;
  * @see org.springframework.web.context.ContextLoaderListener
  */
 @SuppressWarnings("serial")
-public class DispatcherServlet extends FlashMapManager.FrameworkServlet {
+public class DispatcherServlet extends FrameworkServlet {
 
 	/** Well-known name for the MultipartResolver object in the bean factory for this namespace. */
 	public static final String MULTIPART_RESOLVER_BEAN_NAME = "multipartResolver";
@@ -280,7 +280,9 @@ public class DispatcherServlet extends FlashMapManager.FrameworkServlet {
 		// This is currently strictly internal and not meant to be customized
 		// by application developers.
 		try {
+			//此处加载  DispatcherServlet.properties 文件  加载默认配置
 			ClassPathResource resource = new ClassPathResource(DEFAULT_STRATEGIES_PATH, DispatcherServlet.class);
+			//将默认配置放入defaultStrategies 中
 			defaultStrategies = PropertiesLoaderUtils.loadProperties(resource);
 		}
 		catch (IOException ex) {

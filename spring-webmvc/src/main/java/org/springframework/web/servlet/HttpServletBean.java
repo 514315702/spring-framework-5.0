@@ -67,7 +67,7 @@ import org.springframework.web.context.support.StandardServletEnvironment;
  * filter's {@link #getServletContext() ServletContext} (see
  * {@link org.springframework.web.context.support.WebApplicationContextUtils}).
  *
- * <p>The {@link FlashMapManager.FrameworkServlet} class is a more specific servlet base
+ * <p>The {@link FrameworkServlet} class is a more specific servlet base
  * class which loads its own application context. FrameworkServlet serves
  * as direct base class of Spring's full-fledged {@link DispatcherServlet}.
  *
@@ -143,6 +143,10 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	 * invoke subclass initialization.
 	 * @throws ServletException if bean properties are invalid (or required
 	 * properties are missing), or if subclass initialization fails.
+	 */
+	/**
+	 * 在此处实现servlet初始化
+	 * @throws ServletException
 	 */
 	@Override
 	public final void init() throws ServletException {
