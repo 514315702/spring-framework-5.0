@@ -10,7 +10,8 @@ sourceCompatibility = 1.8
 // tomcat: 以下配置会在第一次启动时下载插件二进制文件
 buildscript {
     repositories {
-        jcenter()
+        gradlePluginPortal()
+        //jcenter()
     }
 
     dependencies {
@@ -39,8 +40,8 @@ dependencies {
 
 // tomcat: 一些协议设置（注意，这里必须加上，不然会抛tomcat的异常，仅限tomcat9）
 tomcat {
-    httpPort = 8090
-    contextPath = '/sample-app'
+    httpPort = 80
+    contextPath = '/'
     httpProtocol = 'org.apache.coyote.http11.Http11Nio2Protocol'
     ajpProtocol  = 'org.apache.coyote.ajp.AjpNio2Protocol'
 }
