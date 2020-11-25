@@ -165,7 +165,7 @@ configure(allprojects) { project ->
 		testCompile("org.mockito:mockito-core:2.19.1") {
 			exclude group: "org.hamcrest", module: "hamcrest-core"
 		}
-		testCompile("com.nhaarman:mockito-kotlin:1.8.0") {
+		testCompile("com.nhaarman:mockito-kotlin:1.6.0") {
 			exclude module: "kotlin-stdlib"
 			exclude module: "kotlin-reflect"
 			exclude module: "mockito-core"

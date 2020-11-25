@@ -16,15 +16,6 @@
 
 package org.springframework.web.servlet.support;
 
-import java.util.EnumSet;
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
-import javax.servlet.FilterRegistration.Dynamic;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.core.Conventions;
 import org.springframework.lang.Nullable;
@@ -33,7 +24,11 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.context.AbstractContextLoaderInitializer;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
-import org.springframework.web.servlet.FlashMapManager;
+import org.springframework.web.servlet.FrameworkServlet;
+
+import javax.servlet.*;
+import javax.servlet.FilterRegistration.Dynamic;
+import java.util.EnumSet;
 
 /**
  * Base class for {@link org.springframework.web.WebApplicationInitializer}
@@ -81,7 +76,7 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 		WebApplicationContext servletAppContext = createServletApplicationContext();
 		Assert.notNull(servletAppContext, "createServletApplicationContext() must not return null");
 
-		FlashMapManager.FrameworkServlet dispatcherServlet = createDispatcherServlet(servletAppContext);
+		FrameworkServlet dispatcherServlet = createDispatcherServlet(servletAppContext);
 		Assert.notNull(dispatcherServlet, "createDispatcherServlet(WebApplicationContext) must not return null");
 		dispatcherServlet.setContextInitializers(getServletApplicationContextInitializers());
 
@@ -125,12 +120,12 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 	protected abstract WebApplicationContext createServletApplicationContext();
 
 	/**
-	 * Create a {@link DispatcherServlet} (or other kind of {@link FlashMapManager.FrameworkServlet}-derived
+	 * Create a {@link DispatcherServlet} (or other kind of {@link FrameworkServlet}-derived
 	 * dispatcher) with the specified {@link WebApplicationContext}.
-	 * <p>Note: This allows for any {@link FlashMapManager.FrameworkServlet} subclass as of 4.2.3.
+	 * <p>Note: This allows for any {@link FrameworkServlet} subclass as of 4.2.3.
 	 * Previously, it insisted on returning a {@link DispatcherServlet} or subclass thereof.
 	 */
-	protected FlashMapManager.FrameworkServlet createDispatcherServlet(WebApplicationContext servletAppContext) {
+	protected FrameworkServlet createDispatcherServlet(WebApplicationContext servletAppContext) {
 		return new DispatcherServlet(servletAppContext);
 	}
 
