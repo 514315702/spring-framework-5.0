@@ -16,10 +16,10 @@
 
 package org.springframework.web.servlet.theme;
 
+import org.springframework.lang.Nullable;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.lang.Nullable;
 
 /**
  * {@link org.springframework.web.servlet.ThemeResolver} implementation
@@ -33,6 +33,10 @@ import org.springframework.lang.Nullable;
  * @author Juergen Hoeller
  * @since 17.06.2003
  * @see #setDefaultThemeName
+ */
+
+/**
+ * FixedThemeResolve 选择一个固定的主题
  */
 public class FixedThemeResolver extends AbstractThemeResolver {
 

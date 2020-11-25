@@ -484,14 +484,23 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
 	 */
 	protected void initStrategies(ApplicationContext context) {
+		//初始化 MultipartResolver
 		initMultipartResolver(context);
+		//初始化 LocaleResolver
 		initLocaleResolver(context);
+		//初始化ThemeResolver
 		initThemeResolver(context);
+		//初始化 HandlerMappings
 		initHandlerMappings(context);
+		//初始化HandlerAdapters
 		initHandlerAdapters(context);
+		//初始化 HandlerExceptionResolvers
 		initHandlerExceptionResolvers(context);
+		//初始化 RequestToViewNameTranslator
 		initRequestToViewNameTranslator(context);
+		//初始化 ViewResolvers
 		initViewResolvers(context);
+		//初始化 FlashMapManager
 		initFlashMapManager(context);
 	}
 
@@ -500,7 +509,17 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * <p>If no bean is defined with the given name in the BeanFactory for this namespace,
 	 * no multipart handling is provided.
 	 */
+//	Spring中，MultipartResolver主要用来处理文件上传。默认情况下，Spring 是没有 multipart
+//	处理的，每个请求就会被检查是否包含multipart然而，如果请求中包含multipart，
+//那么上下文中定义的 MultipartResolver 会解析它，这样请求中的multipart属性就会像其他属性一样被处理
 	private void initMultipartResolver(ApplicationContext context) {
+//		因为之前的步骤已完成了 spring 中配置文件的解析，所以在这里只要在配置文件注册过
+//		都可以通过 ApplicationContext 提供的 getBean 方法来 接获取对应bean ，进而初始
+//		MultipartResolver 中的 multipartResolver 变量。
+//		<bean id =" multipartResolver"  class="org.Springframework.web multipart.commons.MultipartResolver" >
+//					该属性用来配置可上传文件的最大字节数
+//				<property name= "maximumFileSize "><value>1OOOOO<lvalue></property>
+//      </bean>
 		try {
 			this.multipartResolver = context.getBean(MULTIPART_RESOLVER_BEAN_NAME, MultipartResolver.class);
 			if (logger.isDebugEnabled()) {
@@ -524,6 +543,24 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	private void initLocaleResolver(ApplicationContext context) {
 		try {
+
+			//1.基于 URL 参数的配置
+			//页面上加 <a href=”?locale="zh_CN"> 简体中文</a> 来控制项目中使用的国际化参数。
+			// 而提供这个功能的就 AcceptHeaderLocaleResolver认的参数名为 locale，注意大小写。
+			// 里面放的就是你的提交参数，比如 US, zh_CN
+			//<bean id=localeResolver” class=org.Springframework.web.servlet.il8n.AcceptHeaderLocaleResolver ”/>
+
+			//基于 session 的配置
+			//它通过检验用户会话中预置属的属性来解析区域。
+			// 最常用的是根据用户本次会话过程中的语言设定决定语言种类（
+			// 例如，用户登录时选择语言种类 ，则此次登录周期内统一使用此语言设定），
+			// 如果该会话属性不存在，它 根据 accept-language HTTP 头部确定默认区域
+			//<bean id=localeResolver” class=org.Springframework.web.servlet.il8n.SessionLocaleResolver ”/>
+
+
+			//基于 cookie 的国际化配置
+			//CookieLocaleResolver 用于通过浏览器的 cookie取得Locale对象 这种策略在应用程序不支持会话或者状态必须保存在客户端时
+			//<bean id=localeResolver" classo.org.Springframework.web.servlet.i18n.CookieLocaleResolver/>
 			this.localeResolver = context.getBean(LOCALE_RESOLVER_BEAN_NAME, LocaleResolver.class);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Using LocaleResolver [" + this.localeResolver + "]");
@@ -546,6 +583,13 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	private void initThemeResolver(ApplicationContext context) {
 		try {
+			//主题资源
+			//org.Springframework.u.context.ThemeSource是Spring中主题资源的接口
+			// Spring的主题需要通过 ThemeSource 接口来实现存放主题信息的资源
+
+			//对于主题解 主要有3个比较常用，详细看子类
+
+			//根据用户请求来改变主题，那么 Spring 提供了一个已经实现的拦截器ThemeChangeInterceptor拦截器了，需要在handlMappings中配置拦截器
 			this.themeResolver = context.getBean(THEME_RESOLVER_BEAN_NAME, ThemeResolver.class);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Using ThemeResolver [" + this.themeResolver + "]");
@@ -553,11 +597,11 @@ public class DispatcherServlet extends FrameworkServlet {
 		}
 		catch (NoSuchBeanDefinitionException ex) {
 			// We need to use the default.
-			this.themeResolver = getDefaultStrategy(context, ThemeResolver.class);
-			if (logger.isDebugEnabled()) {
-				logger.debug("Unable to locate ThemeResolver with name '" + THEME_RESOLVER_BEAN_NAME +
-						"': using default [" + this.themeResolver + "]");
-			}
+				this.themeResolver = getDefaultStrategy(context, ThemeResolver.class);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Unable to locate ThemeResolver with name '" + THEME_RESOLVER_BEAN_NAME +
+							"': using default [" + this.themeResolver + "]");
+				}
 		}
 	}
 
@@ -566,11 +610,25 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * <p>If no HandlerMapping beans are defined in the BeanFactory for this namespace,
 	 * we default to BeanNameUrlHandlerMapping.
 	 */
+	/**
+	 * SpringMVC 将加载当前系统中所有实现了HandlerMapping 接口的 bean，
+	 * 也可加载指定的HandlerMapping ，并将值设置为false,
+	 *<init-pararn>
+	 *   <pararn- narne>detectAllHandlerMappings</pararn- narne>
+	 *   <pararn- value>false</pararn-value>
+	 * </init-pararn>
+	 * SpringMVC 找名为 “handlerMapping ” 的 bean ，
+	 * 并作为当前系统中唯一的handlermappin。如果没有定义 handlerMapping 的话，
+	 * 则 SpringMVC 将按照org.Springframework.web.servlet.DispatcherServlet 在
+	 * 目录下的DispatcherServlet operties 中所定义的 org.Springframework.web.servlet.HandlerMapping 的内容来默认的 handlerMapping
+	 * @param context
+	 */
 	private void initHandlerMappings(ApplicationContext context) {
 		this.handlerMappings = null;
 
 		if (this.detectAllHandlerMappings) {
 			// Find all HandlerMappings in the ApplicationContext, including ancestor contexts.
+
 			Map<String, HandlerMapping> matchingBeans =
 					BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HandlerMapping.class, true, false);
 			if (!matchingBeans.isEmpty()) {
@@ -604,9 +662,17 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * <p>If no HandlerAdapter beans are defined in the BeanFactory for this namespace,
 	 * we default to SimpleControllerHandlerAdapter.
 	 */
+	/**
+	 * 初始化HandlerAdapters
+	 * 如果没有在配置文件中定义自己的适配器，那么 Spring 会默认加载配置文件DispatcherServlet.properties中的3个适配器
+	 * @param context
+	 */
 	private void initHandlerAdapters(ApplicationContext context) {
 		this.handlerAdapters = null;
 
+		//1.HTTP 请求处理器适自己器（ HttpRequestHandlerAdapter）
+		//2.简单控制器处理器适配器（SimpleControllerHandlerAdapter）
+		//注解方法处理器适配器（ AnnotationMethodHandlerAdapter）
 		if (this.detectAllHandlerAdapters) {
 			// Find all HandlerAdapters in the ApplicationContext, including ancestor contexts.
 			Map<String, HandlerAdapter> matchingBeans =
@@ -641,6 +707,13 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the HandlerExceptionResolver used by this class.
 	 * <p>If no bean is defined with the given name in the BeanFactory for this namespace,
 	 * we default to no exception resolver.
+	 */
+	/**
+	 * 6.初始化 HandlerExceptionResolvers
+	 * 基于HandlerExceptionResolver 接口的异常处理，使用这种方式只需要实现 resolveException方法，
+	 * 该方法返回 ModelAndView ，在方法内部对异常的类型进行判断，然后尝试生成对应的ModelAndView ，如果该方法返回了null，则 Spring 会继续寻找其他的现了HandlerExceptionResolver接口的bean。换句话说,Spring 会搜索所有注册在其环境中的实现了
+	 * HandlerExceptionResolver接口的bean，逐个执行，到返回了 ModelAndView对象
+	 * @param context
 	 */
 	private void initHandlerExceptionResolvers(ApplicationContext context) {
 		this.handlerExceptionResolvers = null;
@@ -680,6 +753,20 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the RequestToViewNameTranslator used by this servlet instance.
 	 * <p>If no implementation is configured then we default to DefaultRequestToViewNameTranslator.
 	 */
+
+	/**
+	 * 7.初始化 RequestToViewNameTranslator
+	 * @param context
+	 *
+	 * prefix:前缀，表示约定好的视图名称需要加上的前缀，默认是空串。
+	 * suffix:后缀，表示约定好的视图名称需要加上的后缀，默认是空串。
+	 * separator:分隔符，默认是斜杠“/”。
+	 * stripLeadingSlash:如果首字符是分隔符，是否要去除，默认是true。
+	 * stripTrailingSlash:如果最后一个字符是分隔符，是否要去除，默认是true。
+	 * stripExtension:如果请求路径包含扩展名是否要去除，默认是true。
+	 * urIDecode:是否需要对URL解码，默认是true。它会采用request 指定的编码或者ISO-8859-1编码对URL进行解码。
+	 */
+
 	private void initRequestToViewNameTranslator(ApplicationContext context) {
 		try {
 			this.viewNameTranslator =
@@ -703,6 +790,11 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the ViewResolvers used by this class.
 	 * <p>If no ViewResolver beans are defined in the BeanFactory for this
 	 * namespace, we default to InternalResourceViewResolver.
+	 */
+	/**
+	 * 初始化 ViewResolvers
+	 * ViewResolver接口定义了 resolverViewName 方法，根据 viewName 创建合适类型的View实现
+	 * @param context
 	 */
 	private void initViewResolvers(ApplicationContext context) {
 		this.viewResolvers = null;
@@ -741,6 +833,13 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the {@link FlashMapManager} used by this servlet instance.
 	 * <p>If no implementation is configured then we default to
 	 * {@code org.springframework.web.servlet.support.DefaultFlashMapManager}.
+	 */
+	/**
+	 * 初始化 FlashMapManager
+	 * SpringMVC Flash attributes 提供了一个请求存储属性，可供其他请求使用。
+	 * 在使用重定向时候非常必要，例 Post/Redirect/Get 模式。
+	 * Flashattibutes 在重定向之前暂存（就像存在session中）以便重定向之后还能使用，并立即删除
+	 * @param context
 	 */
 	private void initFlashMapManager(ApplicationContext context) {
 		try {

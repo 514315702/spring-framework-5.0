@@ -16,17 +16,8 @@
 
 package org.springframework.web.context;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import javax.servlet.ServletContext;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
@@ -41,6 +32,14 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import javax.servlet.ServletContext;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Performs the actual initialization work for the root application context.
@@ -139,6 +138,9 @@ public class ContextLoader {
 		// This is currently strictly internal and not meant to be customized
 		// by application developers.
 		try {
+//			在初始化的过程中，程序首先会 ContextLoader 的同目录下的
+//			属性文件 ContextLoader.properties，
+//			其中值就是org.springframework.web.context.support.XmlWebApplicationContext
 			ClassPathResource resource = new ClassPathResource(DEFAULT_STRATEGIES_PATH, ContextLoader.class);
 			defaultStrategies = PropertiesLoaderUtils.loadProperties(resource);
 		}
@@ -257,9 +259,19 @@ public class ContextLoader {
 	 * @see #CONTEXT_CLASS_PARAM
 	 * @see #CONFIG_LOCATION_PARAM
 	 */
+	/**
+	 * 初始化servlet环境，加载web.xml
+	 * @param servletContext
+	 * @return
+	 */
 	public WebApplicationContext initWebApplicationContext(ServletContext servletContext) {
 		if (servletContext.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE) != null) {
 			throw new IllegalStateException(
+//					WebApplicationContext 存在性的验证。
+//					在配置中只允许申明一次ServletContextListener，多次扰乱Spring 的执行逻辑，所
+//					以这里首先做的就是对此验证，在 Spring 中如果创建 WebApplicationContext 实例会记录在
+//					ServletContext 中以方便全局调用，而使用的 key 就是 WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE ，
+//					所以验证的方法是查看 ServletContext 例中是否有对 key的属性
 					"Cannot initialize context because there is already a root application context present - " +
 					"check whether you have multiple ContextLoader* definitions in your web.xml!");
 		}
@@ -275,9 +287,13 @@ public class ContextLoader {
 			// Store context in local instance variable, to guarantee that
 			// it is available on ServletContext shutdown.
 			if (this.context == null) {
+//				2.创建WebApplicationContext实例。
+//				如果通过验证，则Spring将创 WebApplicationContext实例的工作委托给了 createWebApplicationContext 函数
+//				在初始化的过程中，程序首先会读取ContextLoader 的同目录下的属性文件ContextLoader.properties ，并根据其中的配置提取将要实现 WebApplicationContext接口的实现类，并根据这个实现类通过反射的方式进行实例的创建
 				this.context = createWebApplicationContext(servletContext);
 			}
 			if (this.context instanceof ConfigurableWebApplicationContext) {
+				//记录在servletContext中
 				ConfigurableWebApplicationContext cwac = (ConfigurableWebApplicationContext) this.context;
 				if (!cwac.isActive()) {
 					// The context has not yet been refreshed -> provide services such as
@@ -291,6 +307,7 @@ public class ContextLoader {
 					configureAndRefreshWebApplicationContext(cwac, servletContext);
 				}
 			}
+			//将实例记录在servletContext 中
 			servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.context);
 
 			ClassLoader ccl = Thread.currentThread().getContextClassLoader();
@@ -298,6 +315,7 @@ public class ContextLoader {
 				currentContext = this.context;
 			}
 			else if (ccl != null) {
+				//映射当前的类加载器与创建的实例到全局变量currentContextPerThread中
 				currentContextPerThread.put(ccl, this.context);
 			}
 

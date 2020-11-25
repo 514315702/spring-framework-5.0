@@ -149,13 +149,32 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		}
 
 		// Set bean properties from init parameters.
+		//解析init-param 并封装到pvs中
+		//ServletConfigPropertyValues 获取值 进入最下面类获取键值对，放入set集合中  getServletConfig ，servlet获取环境
+//		     <servlet>
+//			       <servlet-name>firstServlet</servlet-name>
+//			       <servlet-class>com.Conservlet</servlet-class>
+//		           <init-param>
+//			           <param-name>url</param-name>
+//			            <param-value>jdbc:mysql://localhost:3306/house</param-value>
+//		          </init-param>
+//			</servlet>
 		PropertyValues pvs = new ServletConfigPropertyValues(getServletConfig(), this.requiredProperties);
 		if (!pvs.isEmpty()) {
 			try {
+//				2.将当前 servlet 实例转化成BeanWrapper 实例
+//				PropertyAccessorFactory.forBeanPropertyAccess是Spring 提供工具方法，主要用于将指定实例转化为 Spring 中可以处理的 BeanWrapper 类型的实例
 				BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(this);
+//				注册相对于 Resource 的属性编辑器
+//				属性编辑器 ，我们在上文中已经介绍并且分析过其原理， 这里使属性编辑器的目的是在对当前实例（ DispatcherServlet ）属性注入过程中一旦遇到 Resource 类型的属性就会使用ResourceEditor 去解析。
 				ResourceLoader resourceLoader = new ServletContextResourceLoader(getServletContext());
 				bw.registerCustomEditor(Resource.class, new ResourceEditor(resourceLoader, getEnvironment()));
+				//非空的情况注册beanWrapper,由子类实现
 				initBeanWrapper(bw);
+				//绑定配置项
+//				属性注入
+//				BeanWrapper为Spring 中的方法，支持 Spring 的自动注入。其实我们最常用的属性注入无
+//				非是 contextAttribut、contextClass、nameSpace、contextConfigLocation等
 				bw.setPropertyValues(pvs, true);
 			}
 			catch (BeansException ex) {
@@ -167,6 +186,9 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		}
 
 		// Let subclasses do whatever initialization they like.
+//		5.servletBean 的初始化
+//		在ContextLoaderListener 的时候已经建了WebApplicationContext 实例， 而在这个函数中最重要就是对这个实例进行进一步的补充初始化继续查看 initSerletBean()。父类FrameworkServlet 覆盖了 ServletBean 中的 initServletBean（）。
+//		计时器来统计初始化的执行时间，而且提供了一个扩展方法initFrameworkServlet()用于子类的覆盖操作， 而作为关键的初始化逻辑委托给了initWebApplicationContext()
 		initServletBean();
 
 		if (logger.isDebugEnabled()) {
@@ -182,6 +204,11 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	 * @throws BeansException if thrown by BeanWrapper methods
 	 * @see org.springframework.beans.BeanWrapper#registerCustomEditor
 	 */
+	/**
+	 * 子类实现
+	 * @param bw
+	 * @throws BeansException
+	 */
 	protected void initBeanWrapper(BeanWrapper bw) throws BeansException {
 	}
 
@@ -191,6 +218,10 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	 * method is invoked.
 	 * <p>This default implementation is empty.
 	 * @throws ServletException if subclass initialization fails
+	 */
+	/**
+	 * 子类是实现
+	 * @throws ServletException
 	 */
 	protected void initServletBean() throws ServletException {
 	}
@@ -206,9 +237,13 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		return (getServletConfig() != null ? getServletConfig().getServletName() : null);
 	}
 
-
 	/**
 	 * PropertyValues implementation created from ServletConfig init parameters.
+	 */
+
+
+	/**
+	 * 初始化时候会进入此方法，初始化init-param.
 	 */
 	private static class ServletConfigPropertyValues extends MutablePropertyValues {
 
@@ -218,6 +253,13 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		 * @param requiredProperties set of property names we need, where
 		 * we can't accept default values
 		 * @throws ServletException if any required properties are missing
+		 *
+		 */
+		/**
+		 * .封装及验证初始化参数ServletConfigPropertyValues
+		 * 封装属性主要是对初始化的参数进行封装，也就是 servlet 中配置的init-param 中配置的封装。
+		 * 当然 ，用户可以通过对requiredProperties参数的初始化来强制验证某些属性的必要性，
+		 * 这样，在属性封装的过程中，一旦检测到 requiredProperties 中的属性没有指定初始值，就会抛出异常
 		 */
 		public ServletConfigPropertyValues(ServletConfig config, Set<String> requiredProperties)
 				throws ServletException {
@@ -229,6 +271,7 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 			while (paramNames.hasMoreElements()) {
 				String property = paramNames.nextElement();
 				Object value = config.getInitParameter(property);
+				//将键值对放入MutablePropertyValues中
 				addPropertyValue(new PropertyValue(property, value));
 				if (missingProps != null) {
 					missingProps.remove(property);

@@ -34,7 +34,54 @@ import javax.servlet.ServletContextListener;
  * @see #setContextInitializers
  * @see org.springframework.web.WebApplicationInitializer
  */
+
+/**
+ * ContextLoaderListener的作用就是启动Web容器时,
+ * 自动装配ApplicationContext的配置信息。因为它实现了ServletContextListener这个接口，
+ * 在web.xml配置这个监听器，启动容器时,就会默认执行它实现的方法，使用ServletContextListener接口，
+ * 开发者能够在为客户端请求提供服务之前向ServletContext中添加任意的对象。
+ * 这个对象在ServletContext启动的时候被初始化，然后在ServletContext整个运行期间都是可见的。
+ */
 public class ContextLoaderListener extends ContextLoader implements ServletContextListener {
+	/**
+	 *
+	 * ServletContextListener，在servlet api包中，web.xml实现监听器时候
+	 * 1 . 例
+	 * public class MyDataContextListener implements ServletContextListener {
+	 * private ServletContext context = null ,
+	 * public MyDataContextListener (){}
+	 *
+	 * //该方法在ServletContext启动之后被调用，并准备处理客户端请求
+	 * public void contextInitialized(ServletContextEvent event) {
+	 *    this.context= event . getServletContext( );
+	 *     通过你可以实现自己的逻辑并将结果记录 属性中
+	 *    context = setAttribute(myData","this is myData") ;
+	 *  }
+	 * ／／这个方法在 ServletContext 将要关闭的时候调用
+	 * public void contextDestroyed(ServletContextEvent event) {
+	 *    this.context = null ;
+	 * }
+	 *
+	 *2. 注册监昕器
+	 *   web.xrnl 件中需要注 自定义的监听器。
+	 * <listener>
+	 *   com.test.MyDataContextListener
+	 * </listener>
+	 *
+	 *
+	 * 3.测试
+	 *
+	 * 一旦 Web 用启动的时候，我们就能在任意servlet 或者 JSP 中通过下面的方式获取我
+	 * 们初始化的参数 ，如下：
+	 * String myData = (String)getServletContext().getAttribute ("myData") ;
+	 *
+	 */
+
+	/**
+	 *
+	 */
+
+
 
 	/**
 	 * Create a new {@code ContextLoaderListener} that will create a web application
@@ -97,6 +144,11 @@ public class ContextLoaderListener extends ContextLoader implements ServletConte
 
 	/**
 	 * Initialize the root web application context.
+	 */
+
+	/**
+	 * 此处实现，调用父类的initWebApplicationContext的方法
+	 * @param event 加载环境
 	 */
 	@Override
 	public void contextInitialized(ServletContextEvent event) {

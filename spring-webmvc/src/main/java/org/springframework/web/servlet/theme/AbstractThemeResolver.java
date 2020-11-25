@@ -26,6 +26,11 @@ import org.springframework.web.servlet.ThemeResolver;
  * @author Jean-Pierre Pawlak
  * @since 17.06.2003
  */
+
+/**
+ * AbstractThemeResolver 是一个抽象类被 SessionThemeResolver和FixedThemeResolver
+ * 继承，也可以继承它来自定义主题解析器
+ */
 public abstract class AbstractThemeResolver implements ThemeResolver {
 
 	/**
