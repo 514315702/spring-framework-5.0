@@ -4,6 +4,7 @@ apply plugin: 'com.bmuschko.tomcat' //tomcat: 插件
 
 group 'org.springframework'
 version '5.0.20.BUILD-SNAPSHOT'
+project.webAppDirName = "src/main/webapp"
 
 sourceCompatibility = 1.8
 
@@ -24,6 +25,15 @@ allprojects {
     repositories {
         maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
     }
+}
+
+sourceSets {
+    main{
+        resources.srcDirs = ["src/main/java"]    //引入资源文件，打包时才会将配置文件植入war文件
+    }
+    main.compileClasspath += configurations.provided
+    test.compileClasspath += configurations.provided
+    test.runtimeClasspath += configurations.provided
 }
 
 

@@ -16,20 +16,6 @@
 
 package org.springframework.web.servlet.view;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.http.MediaType;
 import org.springframework.lang.Nullable;
@@ -40,6 +26,13 @@ import org.springframework.web.context.support.ContextExposingHttpServletRequest
 import org.springframework.web.context.support.WebApplicationObjectSupport;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.support.RequestContext;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Abstract base class for {@link org.springframework.web.servlet.View}
@@ -301,6 +294,9 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 	 * Delegates to renderMergedOutputModel for the actual rendering.
 	 * @see #renderMergedOutputModel
 	 */
+	/**
+	 * //通过 viewName 析到对 View 后，就可以进一步地处理跳转逻辑了
+	 */
 	@Override
 	public void render(@Nullable Map<String, ?> model, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
@@ -318,6 +314,17 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 	/**
 	 * Creates a combined output Map (never {@code null}) that includes dynamic values and static attributes.
 	 * Dynamic values take precedence over static attributes.
+	 */
+
+	/**
+	 * 了解到对于 ModelView 的使用，可以将一些属性直接放入其中，然后
+	 * 在页面上直接通过 JSTL 语法 或者原始 request获取。这是一个很方便也神奇的功能，但是
+	 * 实现却并不复杂，无非是把我们将要用到的属性放request中，以便在其他地方可以直接调
+	 * 用，而解析这些属性的工作就是在 createMergedOutputMode 函数中完成的
+	 * @param model
+	 * @param request
+	 * @param response
+	 * @return
 	 */
 	protected Map<String, Object> createMergedOutputModel(@Nullable Map<String, ?> model,
 			HttpServletRequest request, HttpServletResponse response) {

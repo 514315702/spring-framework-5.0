@@ -16,14 +16,6 @@
 
 package org.springframework.web.servlet.handler;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.core.Ordered;
@@ -34,16 +26,19 @@ import org.springframework.util.PathMatcher;
 import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.context.support.WebApplicationObjectSupport;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.CorsProcessor;
-import org.springframework.web.cors.CorsUtils;
-import org.springframework.web.cors.DefaultCorsProcessor;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.*;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.util.UrlPathHelper;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract base class for {@link org.springframework.web.servlet.HandlerMapping}
@@ -345,13 +340,25 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 * @return the corresponding handler instance, or the default handler
 	 * @see #getHandlerInternal
 	 */
+
+	/**
+	 * 系统启动时 Spring 将所有的映射型的 bean封装this.handlerMappings 变量 ，
+	 *  所以此函数的目的就是遍历所有的 HandlerMapping， 调用getHandler 方法进行封装处理
+	 *  已SimpleUrlHandlerMapping 为例查看其 getHandler 如下：
+	 * @param request current HTTP request
+	 * @return
+	 * @throws Exception
+	 */
 	@Override
 	@Nullable
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		//根据 request 获取对应的 handler
 		Object handler = getHandlerInternal(request);
 		if (handler == null) {
+			// 果没有对应 equesthander 默认的 handler
 			handler = getDefaultHandler();
 		}
+		//如果没有提供默认的 handler 无法继续处理返回 null
 		if (handler == null) {
 			return null;
 		}
@@ -409,6 +416,13 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 * @param request current HTTP request
 	 * @return the HandlerExecutionChain (never {@code null})
 	 * @see #getAdaptedInterceptors()
+	 */
+	/**
+	 * getHandlerExecutionChain 函数最主要的目的是将配置中的对应拦截器加入到执行链中，
+	 * 以保证这些拦截器可以有效地作用于目标对象。
+	 * @param handler
+	 * @param request
+	 * @return
 	 */
 	protected HandlerExecutionChain getHandlerExecutionChain(Object handler, HttpServletRequest request) {
 		HandlerExecutionChain chain = (handler instanceof HandlerExecutionChain ?
