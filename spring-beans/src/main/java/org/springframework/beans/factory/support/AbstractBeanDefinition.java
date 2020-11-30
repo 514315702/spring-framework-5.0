@@ -16,14 +16,6 @@
 
 package org.springframework.beans.factory.support;
 
-import java.lang.reflect.Constructor;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
-
 import org.springframework.beans.BeanMetadataAttributeAccessor;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -36,6 +28,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import java.lang.reflect.Constructor;
+import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Base class for concrete, full-fledged {@link BeanDefinition} classes,
@@ -62,30 +58,36 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * Constant for the default scope name: {@code ""}, equivalent to singleton
 	 * status unless overridden from a parent bean definition (if applicable).
 	 */
+	//缺省作用域名称常量定义:"",等价于 singleton
 	public static final String SCOPE_DEFAULT = "";
 
 	/**
 	 * Constant that indicates no external autowiring at all.
 	 * @see #setAutowireMode
 	 */
+
+	//注入模型 ,表示根本没有外部自动接线的常数
 	public static final int AUTOWIRE_NO = AutowireCapableBeanFactory.AUTOWIRE_NO;
 
 	/**
 	 * Constant that indicates autowiring bean properties by name.
 	 * @see #setAutowireMode
 	 */
+	//通过名称指示自动装配Bean属性的常量
 	public static final int AUTOWIRE_BY_NAME = AutowireCapableBeanFactory.AUTOWIRE_BY_NAME;
 
 	/**
 	 * Constant that indicates autowiring bean properties by type.
 	 * @see #setAutowireMode
 	 */
+	//指示按类型自动装配Bean属性的常数。
 	public static final int AUTOWIRE_BY_TYPE = AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE;
 
 	/**
 	 * Constant that indicates autowiring a constructor.
 	 * @see #setAutowireMode
 	 */
+	//指示自动装配构造函数的常数
 	public static final int AUTOWIRE_CONSTRUCTOR = AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR;
 
 	/**
@@ -95,6 +97,9 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * @deprecated as of Spring 3.0: If you are using mixed autowiring strategies,
 	 * use annotation-based autowiring for clearer demarcation of autowiring needs.
 	 */
+	/**
+	 * 从Spring 3.0开始：如果您使用混合自动装配策略，则使用基于注释的自动装配来更清楚地划分自动装配需求
+	 */
 	@Deprecated
 	public static final int AUTOWIRE_AUTODETECT = AutowireCapableBeanFactory.AUTOWIRE_AUTODETECT;
 
@@ -102,12 +107,14 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * Constant that indicates no dependency check at all.
 	 * @see #setDependencyCheck
 	 */
+	//表示根本没有依赖检查的常量
 	public static final int DEPENDENCY_CHECK_NONE = 0;
 
 	/**
 	 * Constant that indicates dependency checking for object references.
 	 * @see #setDependencyCheck
 	 */
+	//指示对对象引用进行依赖检查的常量
 	public static final int DEPENDENCY_CHECK_OBJECTS = 1;
 
 	/**
@@ -115,6 +122,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * @see #setDependencyCheck
 	 * @see org.springframework.beans.BeanUtils#isSimpleProperty
 	 */
+	//指示对“简单”属性进行依赖性检查的常数
 	public static final int DEPENDENCY_CHECK_SIMPLE = 2;
 
 	/**
@@ -122,6 +130,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * (object references as well as "simple" properties).
 	 * @see #setDependencyCheck
 	 */
+	//指示对所有属性进行依赖检查的常数 (对象引用以及“简单”属性)
 	public static final int DEPENDENCY_CHECK_ALL = 3;
 
 	/**
@@ -133,29 +142,43 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * name.
 	 * <p>Currently, the method names detected during destroy method inference
 	 * are "close" and "shutdown", if present on the specific bean class.
+	 *
+	 *
+	 * 指示容器应尝试推断bean的{{@link #setDestroyMethodName destroy方法名称}的常量，而不是方法名称的显式指定。
+	 * 值{@value}专门设计为在方法名称中包括否则为非法的字符，从而确保不会与具有相同名称的合法命名方法发生冲突
+	 *
+	 *当前，在销毁方法推断期间检测到的方法名称为“关闭”和“关闭”（如果存在于特定的Bean类上）
 	 */
 	public static final String INFER_METHOD = "(inferred)";
 
 
+	// 当前bean定义的beanClass属性，注意并不一定是最终生成的bean所使用的class，
+	// 可能是 String, 也可能是 Class
 	@Nullable
 	private volatile Object beanClass;
 
+	//目标 bean 的作用域，初始化为 "", 相当于 singleton
 	@Nullable
 	private String scope = SCOPE_DEFAULT;
 
+	//是否抽象 bean定义
 	private boolean abstractFlag = false;
-
+	//是否懒初始化  对应lazy_init
 	private boolean lazyInit = false;
+	//自动装配模式 : 初始化为不要使用自动装配
 
 	private int autowireMode = AUTOWIRE_NO;
-
+	// 依赖检查 : 初始化为不要做依赖检查
 	private int dependencyCheck = DEPENDENCY_CHECK_NONE;
 
+	//被当前bean定义所依赖的bean的名称
 	@Nullable
 	private String[] dependsOn;
 
+	// 是否作为自动装配候选 ， 初始化为 true
 	private boolean autowireCandidate = true;
 
+	//作为自动装配候选时，是否作为主要候选, 初始化为 false (不作为主要候选)
 	private boolean primary = false;
 
 	private final Map<String, AutowireCandidateQualifier> qualifiers = new LinkedHashMap<>();
@@ -163,38 +186,58 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	@Nullable
 	private Supplier<?> instanceSupplier;
 
+	//是否允许访问非公开构造函数，非公开方法
+	// 该属性主要用于构造函数解析，初始化方法,析构方法解析，bean属性的set/get方法不受该属性影响
 	private boolean nonPublicAccessAllowed = true;
 
+	//调用构造函数时，是否采用宽松匹配
 	private boolean lenientConstructorResolution = true;
 
+	//工厂bean名称
 	@Nullable
 	private String factoryBeanName;
-
+	// 工厂方法名称
 	@Nullable
 	private String factoryMethodName;
-
+	// 构造函数参数值  对应construct -arg
 	@Nullable
 	private ConstructorArgumentValues constructorArgumentValues;
 
+
+	// 属性值，注意这里使用了 MutablePropertyValues ， 表示这些属性值在
+	// 最终被设置到 bean实例之前一直是可以被修改的
 	@Nullable
 	private MutablePropertyValues propertyValues;
 
+
 	private MethodOverrides methodOverrides = new MethodOverrides();
 
+	// 初始化方法的名称 init——method
 	@Nullable
 	private String initMethodName;
-
+	// 销毁方法的名称 destory-method
 	@Nullable
 	private String destroyMethodName;
 
+	//是否执行 init——method 程序设置
 	private boolean enforceInitMethod = true;
 
+	//是否执行 destory-method 程序设置
 	private boolean enforceDestroyMethod = true;
 
+	// 是否是一个合成 BeanDefinition,
+	// 合成 在这里的意思表示这不是一个应用开发人员自己定义的 BeanDefinition, 而是程序
+	// 自己组装而成的一个 BeanDefinition, 例子 :
+	// 1. 自动代理的helper bean，一个基础设施bean，因为使用<aop:config> 被自动合成创建;
+	// 2. bean errorPageRegistrarBeanPostProcessor , Spring boot 自动配置针对Web错误页面的
+	// 一个bean，这个bean不需要应用开发人员定义，而是框架根据上下文自动合成组装而成；
 	private boolean synthetic = false;
 
+	// 当前bean 定义的角色，初始化为 ROLE_APPLICATION ， 提示这是一个应用bean
+	// 另外还有基础设施bean（仅供框架内部工作使用），和 支持bean
 	private int role = BeanDefinition.ROLE_APPLICATION;
 
+	//当前bean定义人类可读的描述文本
 	@Nullable
 	private String description;
 
@@ -219,10 +262,12 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	}
 
 	/**
+	 * 深度复制给定的bean定义创建一个新的AbstractBeanDefinition
 	 * Create a new AbstractBeanDefinition as a deep copy of the given
 	 * bean definition.
 	 * @param original the original bean definition to copy from
 	 */
+
 	protected AbstractBeanDefinition(BeanDefinition original) {
 		setParentName(original.getParentName());
 		setBeanClassName(original.getBeanClassName());
@@ -288,6 +333,11 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * {@code initMethodName}, and {@code destroyMethodName} if specified
 	 * in the given bean definition.
 	 * </ul>
+	 *
+	 * 本方法的一个主要用途是用在根据bean定义之间的父子关系生成最终merged的孩子bean定义对象:
+	 * 此时先使用双亲bean定义生成一个RootBeanDefinition,然后调用该RootBeanDefinition
+	 * 对象的overrideFrom(other)方法，这里other就是child bean定义，然后这个RootBeanDefinition
+	 * 就是一个继承自双亲bean定义又符合原始child bean定义的一个最终被使用的BeanDefinition了。
 	 */
 	public void overrideFrom(BeanDefinition other) {
 		if (StringUtils.hasLength(other.getBeanClassName())) {
@@ -353,6 +403,8 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	 * Apply the provided default values to this bean.
 	 * @param defaults the default settings to apply
 	 * @since 2.5
+	 *
+	 *  使用缺省值定义进行当前bean定义的初始化
 	 */
 	public void applyDefaults(BeanDefinitionDefaults defaults) {
 		setLazyInit(defaults.isLazyInit());
@@ -502,6 +554,8 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	/**
 	 * Return whether this bean is "abstract", i.e. not meant to be instantiated
 	 * itself but rather just serving as parent for concrete child bean definitions.
+	 * 是否抽象bean定义，抽象bean定义表示该bean定义不用于被实例化，而仅仅作为
+	 * 最终实现子bean定义的双亲。
 	 */
 	@Override
 	public boolean isAbstract() {
