@@ -62,9 +62,9 @@ public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContex
 	 * @see #afterPropertiesSet()
 	 */
 	public ClassPathXmlApplicationContext() {
-	}
+	 }
 
-	/**
+	 /**
 	 * Create a new ClassPathXmlApplicationContext for bean-style configuration.
 	 * @param parent the parent context
 	 * @see #setConfigLocation
