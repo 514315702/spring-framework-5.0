@@ -16,14 +16,13 @@
 
 package org.springframework.beans.factory.xml;
 
-import java.io.IOException;
-
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
+import java.io.IOException;
 
 /**
  * {@link EntityResolver} implementation that delegates to a {@link BeansDtdResolver}
@@ -44,9 +43,34 @@ public class DelegatingEntityResolver implements EntityResolver {
 	/** Suffix for schema definition files */
 	public static final String XSD_SUFFIX = ".xsd";
 
+	//EntityResolver 有两个参数
 
+
+	/**
+	 * <?xml version= ” 1 encoding="UTF-8"?〉
+	 * < !DOCTYPE beans PUBLIC "-//Spring //DTD BEAN 2.0//EN" "http://www. Springfrarnework.org/
+	 * dtd/Spring-beans-2.O. dtd" >
+	 * <beans >
+	 *     .....
+	 * </beans>
+	 *  publicld: -//Spring //DTD BEAN 2.0//EN
+	 * 	systemld: http://www.Springfrarnework.org/dtd/Spring-beans-2.O. dtd
+	 */
 	private final EntityResolver dtdResolver;
 
+
+	/**
+	 * <?xml version=”l.0” encoding=”UTF- 8” ?>
+	 * <beans xrnlns= "http: //www.Springfrarnework.org/scherna/beans ”
+	 *    xmlns:xsi=” http://www.w3.org/2001/XMLScherna - instance ”
+	 *     xsi:schemaLocation="http://www Springframework erg/schema/beans
+	 *     http://www.springframew rk rg/sch na/beans/Spring-beans.xsd">
+	 *     ......
+	 * </beans>
+	 *
+	 * publicld: null
+	 * systemld: http:/ www.sprinfamework.org/schema/beans/Spring-beans.xsd
+	 */
 	private final EntityResolver schemaResolver;
 
 
@@ -83,9 +107,11 @@ public class DelegatingEntityResolver implements EntityResolver {
 			throws SAXException, IOException {
 
 		if (systemId != null) {
+			//如果是DTD 从这里解析
 			if (systemId.endsWith(DTD_SUFFIX)) {
 				return this.dtdResolver.resolveEntity(publicId, systemId);
 			}
+			// 通过调用META-INF/Spring.schemas解析
 			else if (systemId.endsWith(XSD_SUFFIX)) {
 				return this.schemaResolver.resolveEntity(publicId, systemId);
 			}
